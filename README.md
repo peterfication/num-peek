@@ -25,7 +25,6 @@ just run-float
 - Size/memory usage
 - Mean, Standard Deviation, Median
 - Improve code organization
-- Add CI
 - Publish crate and add installation instructions
 
 ## License
