@@ -1,0 +1,10 @@
+A CLI tool that can peek into `*.npy` files.
+
+Usage: num-peek <FILE_PATH>
+
+Arguments:
+  <FILE_PATH>  Path to the *.npy file
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
