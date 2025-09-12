@@ -10,3 +10,4 @@ repository = "https://github.com/peterfication/num-peek"
 description = "A CLI tool that can peek into `*.npy` files."
 
 [dependencies]
+clap = { version = "4.5.47", features = ["derive"] }
