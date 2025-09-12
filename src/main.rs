@@ -31,4 +31,16 @@ fn main() {
     }
 
     println!("Peek into {}", cli.file_path);
+    println!("----------------------------------------");
+    analyze_npy(&cli.file_path).expect("Failed to analyze the npy file");
+}
+
+fn analyze_npy(file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let bytes = std::fs::read(file_path)?;
+
+    let npy = npyz::NpyFile::new(&bytes[..])?;
+
+    println!("Shape: {:?}", npy.header().shape());
+
+    Ok(())
 }
