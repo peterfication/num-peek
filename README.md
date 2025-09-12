@@ -65,6 +65,7 @@ just run-float
   - If there are more than 10 values, show the smallest 10 and the highest 10
 - Mean, Standard Deviation, Median
 - Different output formats: text, json, ...
+- Some ASCII graph representation of the data
 
 ## License
 
