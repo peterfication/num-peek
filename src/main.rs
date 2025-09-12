@@ -1,11 +1,11 @@
+use std::collections::HashSet;
+
 use clap::Parser;
 
 #[derive(Parser)]
 #[command(author, version)]
 #[command(name = "num-peek")]
-#[command(
-    about = "A CLI tool that can peek into `*.npy` files."
-)]
+#[command(about = "A CLI tool that can peek into `*.npy` files.")]
 struct Cli {
     /// Path to the *.npy file
     #[arg(value_name = "FILE_PATH", value_parser = validate_npy)]
@@ -40,7 +40,37 @@ fn analyze_npy(file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let npy = npyz::NpyFile::new(&bytes[..])?;
 
+    println!("Dimensions: {}", npy.header().shape().len());
     println!("Shape: {:?}", npy.header().shape());
+    let dtype = npy.header().dtype();
+
+    match dtype {
+        npyz::DType::Plain(plain) => {
+            println!("Type: {:?}{}", plain.type_char(), plain.size_field());
+            println!("----------------------------------------");
+
+            match plain.type_char() {
+                npyz::TypeChar::Int if plain.size_field() == 8 => {
+                    let unique_numbers: HashSet<i64> = npy
+                        .data::<i64>()?
+                        .map(|n| n.map(|v| v as i64))
+                        .collect::<Result<HashSet<_>, _>>()?;
+
+                    let max_value = unique_numbers.iter().max().unwrap();
+                    let min_value = unique_numbers.iter().min().unwrap();
+
+                    println!("Number of unique values: {}", unique_numbers.len());
+                    println!("Unique values: {:?}", unique_numbers);
+                    println!("Max value: {:?}", max_value);
+                    println!("Min value: {:?}", min_value);
+                }
+                _ => {
+                    println!("Unsupported dtype for unique value calculation");
+                }
+            }
+        }
+        _ => return Err("Unsupported dtype".into()),
+    }
 
     Ok(())
 }
