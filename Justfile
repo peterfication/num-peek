@@ -17,7 +17,11 @@ npy_create_float FILE_PATH="assets/demo_float.npy":
   uv run ./scripts/npy_create.py {{FILE_PATH}} --float
 
 # Run all steps from the CI
-ci: format cli-help-dump run run-float
+ci: check format lint cli-help-dump run run-float
+
+# Run cargo check
+check:
+  cargo check --all-targets --all-features
 
 # Dump the CLI help to a file
 cli-help-dump:
@@ -33,3 +37,7 @@ format-rust:
 # Format all other files with dprint
 format-rest:
   dprint fmt
+
+# Run clippy linter
+lint:
+  cargo clippy --all-targets --all-features -- -D warnings
