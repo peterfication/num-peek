@@ -91,9 +91,5 @@ jobs:
         run: cargo generate-lockfile
       - name: cargo test
         run: cargo test --all-features
-      - name: cargo run
-        run: cargo run -- assets/demo.npy
-      - name: cargo run float
-        run: cargo run -- assets/demo_float.npy
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2

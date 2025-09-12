@@ -17,7 +17,7 @@ npy_create_float FILE_PATH="assets/demo_float.npy":
   uv run ./scripts/npy_create.py {{FILE_PATH}} --float
 
 # Run all steps from the CI
-ci: check format lint build run run-float doc
+ci: check format lint build test doc
 
 # Run cargo check
 check:
