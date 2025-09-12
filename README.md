@@ -2,7 +2,13 @@
 
 A CLI tool that can peek into `*.npy` files.
 
-## Example
+## Installation
+
+```bash
+cargo install num-peek
+```
+
+## Usage example
 
 ```bash
 $ num-peek assets/demo.npy
@@ -18,10 +24,16 @@ Min value: 1
 Max value: 22
 ```
 
-## Installation
+### Yazi previewer
 
-```bash
-cargo install num-peek
+`num-peek` can be used together with [`piper`](https://github.com/yazi-rs/plugins/tree/main/piper.yazi) as a [Yazi](https://yazi-rs.github.io/) previewer:
+
+```toml
+# yazi.toml
+[plugin]
+prepend_previewers = [
+  { name = "*.npy", run = 'piper -- num-peek $1' },
+]
 ```
 
 ## Development
