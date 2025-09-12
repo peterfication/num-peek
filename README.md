@@ -55,7 +55,6 @@ just run-float
 
 - Limit showing unique values to 10 values
   - If there are more than 10 values, show the smallest 10 and the highest 10
-- Total Elements
 - Mean, Standard Deviation, Median
 - Different output formats: text, json, ...
 

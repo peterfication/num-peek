@@ -9,6 +9,7 @@ Shape: [2, 3]
 Type: Int8
 Bytes: 176 B
 ----------------------------------------
+Number of values: 6
 Number of unique values: 6
 Unique values: [1, 3, 4, 8, 12, 22]
 Min value: 1

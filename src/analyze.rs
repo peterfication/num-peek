@@ -16,11 +16,13 @@ pub struct NpyAnalysis {
 #[derive(Debug)]
 pub enum ValueStats {
     F64 {
+        count: usize,
         unique_values: Vec<f64>,
         min: f64,
         max: f64,
     },
     I64 {
+        count: usize,
         unique_values: Vec<i64>,
         min: i64,
         max: i64,
@@ -48,6 +50,7 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                     if data.is_empty() {
                         None
                     } else {
+                        let count = data.len();
                         let mut unique_numbers: Vec<_> = HashSet::<OrderedFloat<f64>>::from_iter(
                             data.into_iter().map(OrderedFloat),
                         )
@@ -57,6 +60,7 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
 
                         match (unique_numbers.first(), unique_numbers.last()) {
                             (Some(first), Some(last)) => Some(ValueStats::F64 {
+                                count,
                                 min: first.0,
                                 max: last.0,
                                 unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
@@ -72,11 +76,13 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                     if data.is_empty() {
                         None
                     } else {
+                        let count = data.len();
                         let mut unique_numbers: Vec<_> =
                             HashSet::<i64>::from_iter(data).into_iter().collect();
                         unique_numbers.sort_unstable();
 
                         Some(ValueStats::I64 {
+                            count,
                             min: *unique_numbers
                                 .first()
                                 .expect("unique_numbers should not be empty due to is_empty check"),
