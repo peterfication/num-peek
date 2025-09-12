@@ -18,6 +18,12 @@ Min value: 1
 Max value: 22
 ```
 
+## Installation
+
+```bash
+cargo install num-peek
+```
+
 ## Development
 
 ### Prerequisites
