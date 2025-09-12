@@ -50,6 +50,10 @@ doc-open:
 build:
   cargo build
 
+# Build all release artifacts
+build-release:
+  ./scripts/build_release.sh
+
 # Run all tests
 test:
   cargo test --all-features
