@@ -17,7 +17,7 @@ npy_create_float FILE_PATH="assets/demo_float.npy":
   uv run ./scripts/npy_create.py {{FILE_PATH}} --float
 
 # Run all steps from the CI
-ci: check format lint cli-help-dump run run-float
+ci: check format lint build cli-help-dump run run-float doc
 
 # Run cargo check
 check:
@@ -41,3 +41,15 @@ format-rest:
 # Run clippy linter
 lint:
   cargo clippy --all-targets --all-features -- -D warnings
+
+# Generate documentation
+doc:
+  cargo doc --no-deps --all-features
+
+# Generate documentation and open it in the browser
+doc-open:
+  just doc && open target/doc/git_local_review/index.html
+
+# Build the application
+build:
+  cargo build
