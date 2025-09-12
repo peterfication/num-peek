@@ -57,6 +57,13 @@ fn analyze_npy(file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
                         .map(|n| n.map(OrderedFloat))
                         .collect::<Result<HashSet<_>, _>>()?;
 
+                    // Sort the unique numbers for consistent output
+                    let unique_numbers: Vec<OrderedFloat<f64>> = {
+                        let mut nums: Vec<OrderedFloat<f64>> = unique_numbers.into_iter().collect();
+                        nums.sort_unstable();
+                        nums
+                    };
+
                     let min_value = unique_numbers.iter().min().unwrap();
                     let max_value = unique_numbers.iter().max().unwrap();
 
@@ -68,6 +75,13 @@ fn analyze_npy(file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
                 npyz::TypeChar::Int if plain.size_field() == 8 => {
                     let unique_numbers: HashSet<i64> =
                         npy.data::<i64>()?.collect::<Result<HashSet<_>, _>>()?;
+
+                    // Sort the unique numbers for consistent output
+                    let unique_numbers: Vec<i64> = {
+                        let mut nums: Vec<i64> = unique_numbers.into_iter().collect();
+                        nums.sort_unstable();
+                        nums
+                    };
 
                     let max_value = unique_numbers.iter().max().unwrap();
                     let min_value = unique_numbers.iter().min().unwrap();
