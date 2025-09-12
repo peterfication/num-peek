@@ -58,8 +58,7 @@ just run-float
 - Total Elements
 - Size/memory usage
 - Mean, Standard Deviation, Median
-- Improve code organization
-- Publish crate and add installation instructions
+- Different output formats: text, json, ...
 
 ## License
 
