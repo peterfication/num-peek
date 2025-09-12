@@ -23,6 +23,13 @@ ci: format cli-help-dump run run-float
 cli-help-dump:
   cargo run -- --help > cli_help.txt
 
+# Format all files
+format: format-rust format-rest
+
 # Format the code with rustfmt
-format:
+format-rust:
   cargo fmt --all
+
+# Format all other files with dprint
+format-rest:
+  dprint fmt
