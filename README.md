@@ -12,6 +12,7 @@ A CLI tool that can peek into `*.npy` files.
 ### Getting started
 
 ```bash
+just ci
 just run
 just run-float
 ```

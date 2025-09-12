@@ -15,3 +15,10 @@ npy_create FILE_PATH="assets/demo.npy":
 # Create a .npy with float values file using the provided script (used for testing)
 npy_create_float FILE_PATH="assets/demo_float.npy":
   uv run ./scripts/npy_create.py {{FILE_PATH}} --float
+
+# Run all steps from the CI
+ci: format run run-float
+
+# Format the code with rustfmt
+format:
+  cargo fmt --all
