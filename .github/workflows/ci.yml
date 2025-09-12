@@ -38,21 +38,8 @@ jobs:
       - uses: actions/checkout@v5
       - uses: dprint/check@v2.3
 
-  cli-help-check:
-    name: CLI help check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-      - name: Dump CLI help output
-        run: cargo run -- --help > cli_help.txt
-      - name: Check that the text didn't change
-        run: git diff --exit-code cli_help.txt
-
-  clippy:
-    name: clippy
+  lint:
+    name: Lint with clippy
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -102,6 +89,8 @@ jobs:
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         run: cargo generate-lockfile
+      - name: cargo test
+        run: cargo test --all-features
       - name: cargo run
         run: cargo run -- assets/demo.npy
       - name: cargo run float

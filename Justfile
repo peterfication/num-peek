@@ -17,15 +17,11 @@ npy_create_float FILE_PATH="assets/demo_float.npy":
   uv run ./scripts/npy_create.py {{FILE_PATH}} --float
 
 # Run all steps from the CI
-ci: check format lint build cli-help-dump run run-float doc
+ci: check format lint build run run-float doc
 
 # Run cargo check
 check:
   cargo check --all-targets --all-features
-
-# Dump the CLI help to a file
-cli-help-dump:
-  cargo run -- --help > cli_help.txt
 
 # Format all files
 format: format-rust format-rest
@@ -53,3 +49,7 @@ doc-open:
 # Build the application
 build:
   cargo build
+
+# Run all tests
+test:
+  cargo test --all-features
