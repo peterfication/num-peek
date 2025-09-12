@@ -4,8 +4,16 @@ A CLI tool that can peek into `*.npy` files.
 
 ## Installation
 
+### Cargo
+
 ```bash
 cargo install num-peek
+```
+
+### Homebrew
+
+```bash
+brew install peterfication/num-peek/num-peek
 ```
 
 ## Usage example
