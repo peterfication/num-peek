@@ -1,3 +1,5 @@
+use byte_unit::{Byte, UnitType};
+
 use crate::analyze::{NpyAnalysis, ValueStats};
 
 /// Presents the analysis results to the console.
@@ -7,6 +9,10 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
     println!("Dimensions: {}", analysis.dimensions);
     println!("Shape: {:?}", analysis.shape);
     println!("Type: {}", analysis.dtype_string);
+    println!(
+        "Bytes: {}",
+        Byte::from(analysis.total_bytes).get_appropriate_unit(UnitType::Binary)
+    );
     println!("----------------------------------------");
 
     match &analysis.stats {

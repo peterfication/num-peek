@@ -9,6 +9,7 @@ pub struct NpyAnalysis {
     pub shape: Vec<u64>,
     pub dtype_string: String,
     pub stats: Option<ValueStats>,
+    pub total_bytes: usize,
 }
 
 /// An enum to hold statistics for different supported numeric types.
@@ -29,6 +30,7 @@ pub enum ValueStats {
 /// Analyzes the NPY file and returns a struct with the results.
 pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::Error>> {
     let bytes = std::fs::read(file_path)?;
+    let total_bytes = bytes.len();
     let npy = npyz::NpyFile::new(&bytes[..])?;
 
     let header = npy.header();
@@ -97,5 +99,6 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
         shape,
         dtype_string,
         stats,
+        total_bytes,
     })
 }
