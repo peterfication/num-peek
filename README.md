@@ -8,4 +8,5 @@ A CLI tool that can peek into `*.npy` files.
 
 ```bash
 just run
+just run-float
 ```
