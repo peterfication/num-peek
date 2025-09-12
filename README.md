@@ -12,6 +12,7 @@ A CLI tool that can peek into `*.npy` files.
 ### Getting started
 
 ```bash
+just ci
 just run
 just run-float
 ```
@@ -24,7 +25,6 @@ just run-float
 - Size/memory usage
 - Mean, Standard Deviation, Median
 - Improve code organization
-- Add CI
 - Publish crate and add installation instructions
 
 ## License

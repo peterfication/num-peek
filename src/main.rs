@@ -54,30 +54,28 @@ fn analyze_npy(file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
                 npyz::TypeChar::Float if plain.size_field() == 8 => {
                     let unique_numbers: HashSet<OrderedFloat<f64>> = npy
                         .data::<f64>()?
-                        .map(|n| n.map(|v| OrderedFloat(v)))
+                        .map(|n| n.map(OrderedFloat))
                         .collect::<Result<HashSet<_>, _>>()?;
 
                     let min_value = unique_numbers.iter().min().unwrap();
                     let max_value = unique_numbers.iter().max().unwrap();
 
                     println!("Number of unique values: {}", unique_numbers.len());
-                    println!("Unique values: {:?}", unique_numbers);
-                    println!("Min value: {:?}", min_value);
-                    println!("Max value: {:?}", max_value);
+                    println!("Unique values: {unique_numbers:?}");
+                    println!("Min value: {min_value:?}");
+                    println!("Max value: {max_value:?}");
                 }
                 npyz::TypeChar::Int if plain.size_field() == 8 => {
-                    let unique_numbers: HashSet<i64> = npy
-                        .data::<i64>()?
-                        .map(|n| n.map(|v| v as i64))
-                        .collect::<Result<HashSet<_>, _>>()?;
+                    let unique_numbers: HashSet<i64> =
+                        npy.data::<i64>()?.collect::<Result<HashSet<_>, _>>()?;
 
                     let max_value = unique_numbers.iter().max().unwrap();
                     let min_value = unique_numbers.iter().min().unwrap();
 
                     println!("Number of unique values: {}", unique_numbers.len());
-                    println!("Unique values: {:?}", unique_numbers);
-                    println!("Min value: {:?}", min_value);
-                    println!("Max value: {:?}", max_value);
+                    println!("Unique values: {unique_numbers:?}");
+                    println!("Min value: {min_value:?}");
+                    println!("Max value: {max_value:?}");
                 }
                 _ => {
                     println!("Unsupported dtype for unique value calculation");

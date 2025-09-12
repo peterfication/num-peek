@@ -1,8 +1,8 @@
 [package]
 name = "num-peek"
 version = "0.1.0"
-edition = "2024"
 authors = ["Peter Morgenstern <mail@petergundel.de>"]
+edition = "2024"
 homepage = "https://github.com/peterfication/num-peek"
 license = "MIT"
 readme = "README.md"

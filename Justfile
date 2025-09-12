@@ -15,3 +15,41 @@ npy_create FILE_PATH="assets/demo.npy":
 # Create a .npy with float values file using the provided script (used for testing)
 npy_create_float FILE_PATH="assets/demo_float.npy":
   uv run ./scripts/npy_create.py {{FILE_PATH}} --float
+
+# Run all steps from the CI
+ci: check format lint build cli-help-dump run run-float doc
+
+# Run cargo check
+check:
+  cargo check --all-targets --all-features
+
+# Dump the CLI help to a file
+cli-help-dump:
+  cargo run -- --help > cli_help.txt
+
+# Format all files
+format: format-rust format-rest
+
+# Format the code with rustfmt
+format-rust:
+  cargo fmt --all
+
+# Format all other files with dprint
+format-rest:
+  dprint fmt
+
+# Run clippy linter
+lint:
+  cargo clippy --all-targets --all-features -- -D warnings
+
+# Generate documentation
+doc:
+  cargo doc --no-deps --all-features
+
+# Generate documentation and open it in the browser
+doc-open:
+  just doc && open target/doc/git_local_review/index.html
+
+# Build the application
+build:
+  cargo build
