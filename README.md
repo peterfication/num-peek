@@ -4,6 +4,11 @@ A CLI tool that can peek into `*.npy` files.
 
 ## Development
 
+### Prerequisites
+
+- Rust version >= `1.88.0`
+- [just](https://github.com/casey/just) task runner
+
 ### Getting started
 
 ```bash
