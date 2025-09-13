@@ -9,6 +9,9 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
     println!("Dimensions: {}", analysis.dimensions);
     println!("Shape: {:?}", analysis.shape);
     println!("Type: {}", analysis.dtype_string);
+    if analysis.dtype_string == "Float16" {
+        println!("NOTE: Float16 support is limited in Rust. The values may not be accurate.")
+    }
     println!(
         "Bytes: {}",
         Byte::from(analysis.total_bytes).get_appropriate_unit(UnitType::Binary)
@@ -16,7 +19,7 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
     println!("----------------------------------------");
 
     match &analysis.stats {
-        Some(ValueStats::F64 {
+        Some(ValueStats::I64 {
             count,
             unique_values,
             min,
@@ -24,7 +27,23 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
         }) => {
             print_stats(count, unique_values, min, max);
         }
-        Some(ValueStats::I64 {
+        Some(ValueStats::F16 {
+            count,
+            unique_values,
+            min,
+            max,
+        }) => {
+            print_stats(count, unique_values, min, max);
+        }
+        Some(ValueStats::F32 {
+            count,
+            unique_values,
+            min,
+            max,
+        }) => {
+            print_stats(count, unique_values, min, max);
+        }
+        Some(ValueStats::F64 {
             count,
             unique_values,
             min,

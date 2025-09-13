@@ -64,6 +64,38 @@
     ]
   },
   {
+    "file_path": "assets/float16.npy",
+    "dtype": "float16",
+    "values": [
+      [
+        1.1,
+        3.3,
+        22.5
+      ],
+      [
+        4.2,
+        8.4,
+        12.6
+      ]
+    ]
+  },
+  {
+    "file_path": "assets/float32.npy",
+    "dtype": "float32",
+    "values": [
+      [
+        1.1,
+        3.3,
+        22.5
+      ],
+      [
+        4.2,
+        8.4,
+        12.6
+      ]
+    ]
+  },
+  {
     "file_path": "assets/float64.npy",
     "dtype": "float64",
     "values": [

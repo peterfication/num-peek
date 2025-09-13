@@ -28,6 +28,8 @@ fn cli_run_all_types() {
         "assets/int16.npy",
         "assets/int32.npy",
         "assets/int64.npy",
+        "assets/float16.npy",
+        "assets/float32.npy",
         "assets/float64.npy",
     ];
     for file in files {

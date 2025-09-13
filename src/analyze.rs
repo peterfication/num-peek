@@ -18,17 +18,29 @@ pub struct NpyAnalysis {
 /// An enum to hold statistics for different supported numeric types.
 #[derive(Debug)]
 pub enum ValueStats {
-    F64 {
-        count: usize,
-        unique_values: Vec<f64>,
-        min: f64,
-        max: f64,
-    },
     I64 {
         count: usize,
         unique_values: Vec<i64>,
         min: i64,
         max: i64,
+    },
+    F16 {
+        count: usize,
+        unique_values: Vec<half::f16>,
+        min: half::f16,
+        max: half::f16,
+    },
+    F32 {
+        count: usize,
+        unique_values: Vec<f32>,
+        min: f32,
+        max: f32,
+    },
+    F64 {
+        count: usize,
+        unique_values: Vec<f64>,
+        min: f64,
+        max: f64,
     },
 }
 
@@ -49,8 +61,71 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
             let dtype_str = format!("{:?}{}", plain.type_char(), bits);
 
             let stats = match (plain.type_char(), plain.size_field()) {
-                (npyz::TypeChar::Float, _size) => {
-                    let data: Vec<f64> = npy.data::<f64>()?.collect::<Result<_, _>>()?;
+                (npyz::TypeChar::Int, 1) => value_stats_for_int_type::<i8>(npy)?,
+                (npyz::TypeChar::Int, 2) => value_stats_for_int_type::<i16>(npy)?,
+                (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
+                (npyz::TypeChar::Int, 8) => value_stats_for_int_type::<i64>(npy)?,
+
+                (npyz::TypeChar::Float, 2) => {
+                    let data: Vec<half::f16> =
+                        npy.data::<half::f16>()?.collect::<Result<_, _>>()?;
+
+                    if data.is_empty() {
+                        None
+                    } else {
+                        let count = data.len();
+
+                        let mut unique_numbers: Vec<_> = data
+                            .into_iter()
+                            .map(|x: half::f16| x.to_bits())
+                            .collect::<HashSet<_>>()
+                            .into_iter()
+                            .map(half::f16::from_bits)
+                            .collect();
+
+                        unique_numbers.sort_by_key(|a| a.to_bits());
+
+                        match (unique_numbers.first(), unique_numbers.last()) {
+                            (Some(first), Some(last)) => Some(ValueStats::F16 {
+                                count,
+                                min: *first,
+                                max: *last,
+                                unique_values: unique_numbers.into_iter().collect(),
+                            }),
+                            _ => unreachable!(
+                                "unique_numbers should not be empty due to is_empty check"
+                            ),
+                        }
+                    }
+                }
+                (npyz::TypeChar::Float, 4) => {
+                    let data: Vec<_> = npy.data::<f32>()?.collect::<Result<_, _>>()?;
+                    if data.is_empty() {
+                        None
+                    } else {
+                        let count = data.len();
+                        let mut unique_numbers: Vec<_> = HashSet::<OrderedFloat<f32>>::from_iter(
+                            data.into_iter().map(OrderedFloat),
+                        )
+                        .into_iter()
+                        .collect();
+                        unique_numbers.sort_unstable();
+
+                        match (unique_numbers.first(), unique_numbers.last()) {
+                            (Some(first), Some(last)) => Some(ValueStats::F32 {
+                                count,
+                                min: first.0,
+                                max: last.0,
+                                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
+                            }),
+                            _ => unreachable!(
+                                "unique_numbers should not be empty due to is_empty check"
+                            ),
+                        }
+                    }
+                }
+                (npyz::TypeChar::Float, 8) => {
+                    let data: Vec<_> = npy.data::<f64>()?.collect::<Result<_, _>>()?;
                     if data.is_empty() {
                         None
                     } else {
@@ -76,10 +151,6 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                     }
                 }
 
-                (npyz::TypeChar::Int, 1) => value_stats_for_int_type::<i8>(npy)?,
-                (npyz::TypeChar::Int, 2) => value_stats_for_int_type::<i16>(npy)?,
-                (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
-                (npyz::TypeChar::Int, 8) => value_stats_for_int_type::<i64>(npy)?,
                 _ => None, // Unsupported type for detailed stats
             };
             (dtype_str, stats)

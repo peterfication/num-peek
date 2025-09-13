@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Add support for all int8, int16, int32, float16 and float32
+
 ## [0.1.2] - 2025-09-12
 
 - Add byte size
