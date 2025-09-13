@@ -5,19 +5,12 @@ default:
 run FILE_PATH="assets/demo.npy":
   cargo run -- {{FILE_PATH}}
 
-run-float FILE_PATH="assets/demo_float.npy":
-  cargo run -- {{FILE_PATH}}
-
-# Create a .npy file with int values using the provided script (used for testing)
-npy_create FILE_PATH="assets/demo.npy":
-  uv run ./scripts/npy_create.py {{FILE_PATH}}
-
-# Create a .npy with float values file using the provided script (used for testing)
-npy_create_float FILE_PATH="assets/demo_float.npy":
-  uv run ./scripts/npy_create.py {{FILE_PATH}} --float
+# Create .npy files according to scripts/npy_definitions.json
+npy-create:
+  uv run ./scripts/npy_create.py
 
 # Run all steps from the CI
-ci: check format lint build test doc
+ci: npy-create check format lint build test doc
 
 # Run cargo check
 check:

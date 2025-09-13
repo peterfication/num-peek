@@ -89,6 +89,10 @@ jobs:
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         run: cargo generate-lockfile
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Create *.npy files
+        run: uv run ./scripts/npy_create.py
       - name: cargo test
         run: cargo test --all-features
       - name: Cache Cargo dependencies

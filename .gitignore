@@ -1,2 +1,4 @@
 /target
 /dist
+/assets/*.npy
+!/assets/demo.npy

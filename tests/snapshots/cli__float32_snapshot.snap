@@ -1,0 +1,16 @@
+---
+source: tests/cli.rs
+expression: output
+---
+Peek into assets/float32.npy
+----------------------------------------
+Dimensions: 2
+Shape: [2, 3]
+Type: Float32
+Bytes: 152 B
+----------------------------------------
+Number of values: 6
+Number of unique values: 6
+Unique values: [1.1, 3.3, 4.2, 8.4, 12.6, 22.5]
+Min value: 1.1
+Max value: 22.5

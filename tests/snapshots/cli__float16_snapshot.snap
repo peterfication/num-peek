@@ -1,0 +1,17 @@
+---
+source: tests/cli.rs
+expression: output
+---
+Peek into assets/float16.npy
+----------------------------------------
+Dimensions: 2
+Shape: [2, 3]
+Type: Float16
+NOTE: Float16 support is limited in Rust. The values may not be accurate.
+Bytes: 140 B
+----------------------------------------
+Number of values: 6
+Number of unique values: 6
+Unique values: [1.0996094, 3.3007813, 4.1992188, 8.3984375, 12.6015625, 22.5]
+Min value: 1.0996094
+Max value: 22.5
