@@ -76,6 +76,8 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                     }
                 }
 
+                (npyz::TypeChar::Int, 1) => value_stats_for_int_type::<i8>(npy)?,
+                (npyz::TypeChar::Int, 2) => value_stats_for_int_type::<i16>(npy)?,
                 (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
                 (npyz::TypeChar::Int, 8) => value_stats_for_int_type::<i64>(npy)?,
                 _ => None, // Unsupported type for detailed stats
@@ -94,6 +96,7 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
     })
 }
 
+/// Helper function to compute statistics for integer types.
 fn value_stats_for_int_type<T>(
     npy: npyz::NpyFile<&[u8]>,
 ) -> Result<Option<ValueStats>, Box<dyn Error>>
@@ -111,8 +114,14 @@ where
 
         Ok(Some(ValueStats::I64 {
             count,
-            min: (*unique_numbers.first().unwrap()).into(),
-            max: (*unique_numbers.last().unwrap()).into(),
+            min: (*unique_numbers
+                .first()
+                .expect("unique_numbers should not be empty after non-empty data"))
+            .into(),
+            max: (*unique_numbers
+                .last()
+                .expect("unique_numbers should not be empty after non-empty data"))
+            .into(),
             unique_values: unique_numbers.iter().map(|&x| x.into()).collect(),
         }))
     }

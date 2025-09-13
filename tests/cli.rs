@@ -17,14 +17,19 @@ fn cli_run_with_file(file_path: &str, snapshot_name: &str) {
     let mut cmd = Command::cargo_bin("num-peek").unwrap();
     let result = cmd.arg(file_path).assert().success();
     let output = String::from_utf8(result.get_output().stdout.clone()).unwrap();
-    println!("Output for {}:\n{}", file_path, output);
 
     assert_snapshot!(snapshot_name, output);
 }
 
 #[test]
 fn cli_run_all_types() {
-    let files = ["assets/int32.npy", "assets/int64.npy", "assets/float64.npy"];
+    let files = [
+        "assets/int8.npy",
+        "assets/int16.npy",
+        "assets/int32.npy",
+        "assets/int64.npy",
+        "assets/float64.npy",
+    ];
     for file in files {
         let snapshot_name = format!(
             "{}_snapshot",

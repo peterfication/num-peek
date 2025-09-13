@@ -1,5 +1,37 @@
 [
   {
+    "file_path": "assets/int8.npy",
+    "dtype": "int8",
+    "values": [
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        8,
+        22,
+        12
+      ]
+    ]
+  },
+  {
+    "file_path": "assets/int16.npy",
+    "dtype": "int16",
+    "values": [
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        8,
+        22,
+        12
+      ]
+    ]
+  },
+  {
     "file_path": "assets/int32.npy",
     "dtype": "int32",
     "values": [
