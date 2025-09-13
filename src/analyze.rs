@@ -66,90 +66,9 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                 (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
                 (npyz::TypeChar::Int, 8) => value_stats_for_int_type::<i64>(npy)?,
 
-                (npyz::TypeChar::Float, 2) => {
-                    let data: Vec<half::f16> =
-                        npy.data::<half::f16>()?.collect::<Result<_, _>>()?;
-
-                    if data.is_empty() {
-                        None
-                    } else {
-                        let count = data.len();
-
-                        let mut unique_numbers: Vec<_> = data
-                            .into_iter()
-                            .map(|x: half::f16| x.to_bits())
-                            .collect::<HashSet<_>>()
-                            .into_iter()
-                            .map(half::f16::from_bits)
-                            .collect();
-
-                        unique_numbers.sort_by_key(|a| a.to_bits());
-
-                        match (unique_numbers.first(), unique_numbers.last()) {
-                            (Some(first), Some(last)) => Some(ValueStats::F16 {
-                                count,
-                                min: *first,
-                                max: *last,
-                                unique_values: unique_numbers.into_iter().collect(),
-                            }),
-                            _ => unreachable!(
-                                "unique_numbers should not be empty due to is_empty check"
-                            ),
-                        }
-                    }
-                }
-                (npyz::TypeChar::Float, 4) => {
-                    let data: Vec<_> = npy.data::<f32>()?.collect::<Result<_, _>>()?;
-                    if data.is_empty() {
-                        None
-                    } else {
-                        let count = data.len();
-                        let mut unique_numbers: Vec<_> = HashSet::<OrderedFloat<f32>>::from_iter(
-                            data.into_iter().map(OrderedFloat),
-                        )
-                        .into_iter()
-                        .collect();
-                        unique_numbers.sort_unstable();
-
-                        match (unique_numbers.first(), unique_numbers.last()) {
-                            (Some(first), Some(last)) => Some(ValueStats::F32 {
-                                count,
-                                min: first.0,
-                                max: last.0,
-                                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
-                            }),
-                            _ => unreachable!(
-                                "unique_numbers should not be empty due to is_empty check"
-                            ),
-                        }
-                    }
-                }
-                (npyz::TypeChar::Float, 8) => {
-                    let data: Vec<_> = npy.data::<f64>()?.collect::<Result<_, _>>()?;
-                    if data.is_empty() {
-                        None
-                    } else {
-                        let count = data.len();
-                        let mut unique_numbers: Vec<_> = HashSet::<OrderedFloat<f64>>::from_iter(
-                            data.into_iter().map(OrderedFloat),
-                        )
-                        .into_iter()
-                        .collect();
-                        unique_numbers.sort_unstable();
-
-                        match (unique_numbers.first(), unique_numbers.last()) {
-                            (Some(first), Some(last)) => Some(ValueStats::F64 {
-                                count,
-                                min: first.0,
-                                max: last.0,
-                                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
-                            }),
-                            _ => unreachable!(
-                                "unique_numbers should not be empty due to is_empty check"
-                            ),
-                        }
-                    }
-                }
+                (npyz::TypeChar::Float, 2) => value_stats_for_float16_type(npy)?,
+                (npyz::TypeChar::Float, 4) => value_stats_for_float32_type(npy)?,
+                (npyz::TypeChar::Float, 8) => value_stats_for_float64_type(npy)?,
 
                 _ => None, // Unsupported type for detailed stats
             };
@@ -195,5 +114,92 @@ where
             .into(),
             unique_values: unique_numbers.iter().map(|&x| x.into()).collect(),
         }))
+    }
+}
+
+/// Helper function to compute statistics for f16 type.
+fn value_stats_for_float16_type(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>> {
+    let data: Vec<half::f16> = npy.data::<half::f16>()?.collect::<Result<_, _>>()?;
+
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+
+        let mut unique_numbers: Vec<_> = data
+            .into_iter()
+            .map(|x: half::f16| x.to_bits())
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .map(half::f16::from_bits)
+            .collect();
+
+        unique_numbers.sort_by_key(|a| a.to_bits());
+
+        match (unique_numbers.first(), unique_numbers.last()) {
+            (Some(first), Some(last)) => Ok(Some(ValueStats::F16 {
+                count,
+                min: *first,
+                max: *last,
+                unique_values: unique_numbers.into_iter().collect(),
+            })),
+            _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
+        }
+    }
+}
+
+/// Helper function to compute statistics for f32 type.
+fn value_stats_for_float32_type(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>> {
+    let data: Vec<_> = npy.data::<f32>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let mut unique_numbers: Vec<_> =
+            HashSet::<OrderedFloat<f32>>::from_iter(data.into_iter().map(OrderedFloat))
+                .into_iter()
+                .collect();
+        unique_numbers.sort_unstable();
+
+        match (unique_numbers.first(), unique_numbers.last()) {
+            (Some(first), Some(last)) => Ok(Some(ValueStats::F32 {
+                count,
+                min: first.0,
+                max: last.0,
+                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
+            })),
+            _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
+        }
+    }
+}
+
+/// Helper function to compute statistics for f64 type.
+fn value_stats_for_float64_type(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>> {
+    let data: Vec<_> = npy.data::<f64>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let mut unique_numbers: Vec<_> =
+            HashSet::<OrderedFloat<f64>>::from_iter(data.into_iter().map(OrderedFloat))
+                .into_iter()
+                .collect();
+        unique_numbers.sort_unstable();
+
+        match (unique_numbers.first(), unique_numbers.last()) {
+            (Some(first), Some(last)) => Ok(Some(ValueStats::F64 {
+                count,
+                min: first.0,
+                max: last.0,
+                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
+            })),
+            _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
+        }
     }
 }
