@@ -42,7 +42,8 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
 
     let (dtype_string, stats) = match dtype {
         npyz::DType::Plain(plain) => {
-            let dtype_str = format!("{:?}{}", plain.type_char(), plain.size_field());
+            let bits = plain.size_field() * 8;
+            let dtype_str = format!("{:?}{}", plain.type_char(), bits);
 
             let stats = match (plain.type_char(), plain.size_field()) {
                 (npyz::TypeChar::Float, 8) => {

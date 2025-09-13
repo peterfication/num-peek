@@ -6,7 +6,7 @@ Peek into assets/float64.npy
 ----------------------------------------
 Dimensions: 2
 Shape: [2, 3]
-Type: Float8
+Type: Float64
 Bytes: 176 B
 ----------------------------------------
 Number of values: 6

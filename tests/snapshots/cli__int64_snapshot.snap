@@ -6,7 +6,7 @@ Peek into assets/int64.npy
 ----------------------------------------
 Dimensions: 2
 Shape: [2, 3]
-Type: Int8
+Type: Int64
 Bytes: 176 B
 ----------------------------------------
 Number of values: 6
