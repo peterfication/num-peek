@@ -1,5 +1,21 @@
 [
   {
+    "file_path": "assets/int32.npy",
+    "dtype": "int32",
+    "values": [
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        8,
+        22,
+        12
+      ]
+    ]
+  },
+  {
     "file_path": "assets/int64.npy",
     "dtype": "int64",
     "values": [

@@ -1,5 +1,8 @@
 use std::collections::HashSet;
+use std::error::Error;
+use std::hash::Hash;
 
+use npyz::Deserialize;
 use ordered_float::OrderedFloat;
 
 /// A struct to hold the results of the NPY file analysis.
@@ -46,7 +49,7 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
             let dtype_str = format!("{:?}{}", plain.type_char(), bits);
 
             let stats = match (plain.type_char(), plain.size_field()) {
-                (npyz::TypeChar::Float, 8) => {
+                (npyz::TypeChar::Float, _size) => {
                     let data: Vec<f64> = npy.data::<f64>()?.collect::<Result<_, _>>()?;
                     if data.is_empty() {
                         None
@@ -72,28 +75,9 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                         }
                     }
                 }
-                (npyz::TypeChar::Int, 8) => {
-                    let data: Vec<i64> = npy.data::<i64>()?.collect::<Result<_, _>>()?;
-                    if data.is_empty() {
-                        None
-                    } else {
-                        let count = data.len();
-                        let mut unique_numbers: Vec<_> =
-                            HashSet::<i64>::from_iter(data).into_iter().collect();
-                        unique_numbers.sort_unstable();
 
-                        Some(ValueStats::I64 {
-                            count,
-                            min: *unique_numbers
-                                .first()
-                                .expect("unique_numbers should not be empty due to is_empty check"),
-                            max: *unique_numbers
-                                .last()
-                                .expect("unique_numbers should not be empty due to is_empty check"),
-                            unique_values: unique_numbers,
-                        })
-                    }
-                }
+                (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
+                (npyz::TypeChar::Int, 8) => value_stats_for_int_type::<i64>(npy)?,
                 _ => None, // Unsupported type for detailed stats
             };
             (dtype_str, stats)
@@ -108,4 +92,28 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
         stats,
         total_bytes,
     })
+}
+
+fn value_stats_for_int_type<T>(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>>
+where
+    T: Eq + Hash + Ord + Copy + Into<i64>,
+    T: Deserialize,
+{
+    let data: Vec<T> = npy.data::<T>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let mut unique_numbers: Vec<_> = HashSet::<T>::from_iter(data).into_iter().collect();
+        unique_numbers.sort_unstable();
+
+        Ok(Some(ValueStats::I64 {
+            count,
+            min: (*unique_numbers.first().unwrap()).into(),
+            max: (*unique_numbers.last().unwrap()).into(),
+            unique_values: unique_numbers.iter().map(|&x| x.into()).collect(),
+        }))
+    }
 }
