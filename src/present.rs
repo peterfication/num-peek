@@ -33,7 +33,10 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
             print_stats(count, unique_values, min, max);
         }
         None => {
-            println!("Unsupported dtype for unique value calculation");
+            println!(
+                "Unsupported dtype for unique value calculation {}",
+                analysis.dtype_string
+            );
         }
     }
 }

@@ -56,7 +56,6 @@ prepend_previewers = [
 ```bash
 just ci
 just run
-just run-float
 ```
 
 ## Roadmap

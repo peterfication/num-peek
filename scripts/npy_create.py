@@ -11,47 +11,39 @@ Usage:
     uv run npy_create.py /path/to/output.npy
 """
 
-import argparse
-import os
-import sys
+import json
 
 import numpy as np
 
 
-def create_npy_file(file_path, use_float=False):
+NPY_DEFINITIONS_FILE_PATH = "scripts/npy_definitions.json"
+
+
+def create_npy_files():
     """
-    Creates a new .npy file at file_path if it does not exist already.
-
-    Args:
-        file_path (str): The path to the .npy file.
-        use_float (bool): Whether to use float values in the array.
+    Creates .npy files according to npy_definitions.json.
     """
-    if os.path.exists(file_path):
-        print(f"Error: File exists already at '{file_path}'", file=sys.stderr)
-        sys.exit(1)
+    data = []
+    with open(NPY_DEFINITIONS_FILE_PATH, "r") as f:
+        data = json.load(f)
 
-    if use_float:
-        array = np.array([[1.1, 4.2, 3.3], [8.4, 22.5, 12.6]], dtype=float)
-    else:
-        array = np.array([[1, 4, 3], [8, 22, 12]])
+    print(f"Creating .npy files as per '{NPY_DEFINITIONS_FILE_PATH}'...")
+    print("")
 
-    np.save(file_path, array)
+    for item in data:
+        array = np.array(item["values"], dtype=item["dtype"])
+        np.save(item["file_path"], array)
+        print(
+            f"Created .npy file at '{item['file_path']}' "
+            f"with dtype {item['dtype']} contents:\n{array}"
+        )
+        print("")
 
-    print(f"Created .npy file at '{file_path}' with contents:\n{array}")
+    print("All .npy files created successfully.")
 
 
 def main():
-    """
-    Parses command-line arguments and initiates the analysis.
-    """
-    parser = argparse.ArgumentParser(
-        description="Create a demo NumPy (.npy) file.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument("file_path", type=str, help="The full path to ouput .npy file")
-    parser.add_argument("--float", action="store_true", help="Create array with float values")
-    args = parser.parse_args()
-    create_npy_file(args.file_path, use_float=args.float)
+    create_npy_files()
 
 
 if __name__ == "__main__":
