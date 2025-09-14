@@ -24,6 +24,12 @@ pub enum ValueStats {
         min: i64,
         max: i64,
     },
+    U64 {
+        count: usize,
+        unique_values: Vec<u64>,
+        min: u64,
+        max: u64,
+    },
     F16 {
         count: usize,
         unique_values: Vec<half::f16>,
@@ -66,6 +72,11 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                 (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
                 (npyz::TypeChar::Int, 8) => value_stats_for_int_type::<i64>(npy)?,
 
+                (npyz::TypeChar::Uint, 1) => value_stats_for_uint_type::<u8>(npy)?,
+                (npyz::TypeChar::Uint, 2) => value_stats_for_uint_type::<u16>(npy)?,
+                (npyz::TypeChar::Uint, 4) => value_stats_for_uint_type::<u32>(npy)?,
+                (npyz::TypeChar::Uint, 8) => value_stats_for_uint_type::<u64>(npy)?,
+
                 (npyz::TypeChar::Float, 2) => value_stats_for_float16_type(npy)?,
                 (npyz::TypeChar::Float, 4) => value_stats_for_float32_type(npy)?,
                 (npyz::TypeChar::Float, 8) => value_stats_for_float64_type(npy)?,
@@ -103,6 +114,37 @@ where
         unique_numbers.sort_unstable();
 
         Ok(Some(ValueStats::I64 {
+            count,
+            min: (*unique_numbers
+                .first()
+                .expect("unique_numbers should not be empty after non-empty data"))
+            .into(),
+            max: (*unique_numbers
+                .last()
+                .expect("unique_numbers should not be empty after non-empty data"))
+            .into(),
+            unique_values: unique_numbers.iter().map(|&x| x.into()).collect(),
+        }))
+    }
+}
+
+/// Helper function to compute statistics for unsigned integer types.
+fn value_stats_for_uint_type<T>(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>>
+where
+    T: Eq + Hash + Ord + Copy + Into<u64>,
+    T: Deserialize,
+{
+    let data: Vec<T> = npy.data::<T>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let mut unique_numbers: Vec<_> = HashSet::<T>::from_iter(data).into_iter().collect();
+        unique_numbers.sort_unstable();
+
+        Ok(Some(ValueStats::U64 {
             count,
             min: (*unique_numbers
                 .first()

@@ -1,5 +1,69 @@
 [
   {
+    "file_path": "assets/uint8.npy",
+    "dtype": "uint8",
+    "values": [
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        8,
+        22,
+        12
+      ]
+    ]
+  },
+  {
+    "file_path": "assets/uint16.npy",
+    "dtype": "uint16",
+    "values": [
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        8,
+        22,
+        12
+      ]
+    ]
+  },
+  {
+    "file_path": "assets/uint32.npy",
+    "dtype": "uint32",
+    "values": [
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        8,
+        22,
+        12
+      ]
+    ]
+  },
+  {
+    "file_path": "assets/uint64.npy",
+    "dtype": "uint64",
+    "values": [
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        8,
+        22,
+        12
+      ]
+    ]
+  },
+  {
     "file_path": "assets/int8.npy",
     "dtype": "int8",
     "values": [

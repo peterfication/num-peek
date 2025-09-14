@@ -27,6 +27,14 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
         }) => {
             print_stats(count, unique_values, min, max);
         }
+        Some(ValueStats::U64 {
+            count,
+            unique_values,
+            min,
+            max,
+        }) => {
+            print_stats(count, unique_values, min, max);
+        }
         Some(ValueStats::F16 {
             count,
             unique_values,
