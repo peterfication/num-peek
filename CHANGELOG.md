@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.4] - 2025-09-14
+
 - Add support for string
 - Add support for bool
 - Add support for uint8, uint16, uint32 and uint64
