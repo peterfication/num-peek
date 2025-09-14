@@ -3,7 +3,7 @@ use std::error::Error;
 use std::hash::Hash;
 
 use npyz::Deserialize;
-use ordered_float::OrderedFloat;
+use ordered_float::{OrderedFloat, PrimitiveFloat};
 
 /// A struct to hold the results of the NPY file analysis.
 #[derive(Debug)]
@@ -154,43 +154,48 @@ fn value_stats_for_float16_type(
 fn value_stats_for_float32_type(
     npy: npyz::NpyFile<&[u8]>,
 ) -> Result<Option<ValueStats>, Box<dyn Error>> {
-    let data: Vec<_> = npy.data::<f32>()?.collect::<Result<_, _>>()?;
-    if data.is_empty() {
-        Ok(None)
-    } else {
-        let count = data.len();
-        let unique_numbers: Vec<_> = get_unique_float(data);
-
-        match (unique_numbers.first(), unique_numbers.last()) {
-            (Some(first), Some(last)) => Ok(Some(ValueStats::F32 {
-                count,
-                min: *first,
-                max: *last,
-                unique_values: unique_numbers.into_iter().collect(),
-            })),
-            _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
-        }
-    }
+    value_stats_for_float_type::<f32>(npy, |count, min, max, unique_values| ValueStats::F32 {
+        count,
+        min,
+        max,
+        unique_values,
+    })
 }
 
 /// Helper function to compute statistics for f64 type.
 fn value_stats_for_float64_type(
     npy: npyz::NpyFile<&[u8]>,
 ) -> Result<Option<ValueStats>, Box<dyn Error>> {
-    let data: Vec<_> = npy.data::<f64>()?.collect::<Result<_, _>>()?;
+    value_stats_for_float_type::<f64>(npy, |count, min, max, unique_values| ValueStats::F64 {
+        count,
+        min,
+        max,
+        unique_values,
+    })
+}
+
+/// Helper function to compute statistics for float types (f32, f64).
+fn value_stats_for_float_type<T>(
+    npy: npyz::NpyFile<&[u8]>,
+    make_stats: impl Fn(usize, T, T, Vec<T>) -> ValueStats,
+) -> Result<Option<ValueStats>, Box<dyn Error>>
+where
+    T: PartialOrd + Copy + 'static + PrimitiveFloat,
+    T: Deserialize,
+{
+    let data: Vec<_> = npy.data::<T>()?.collect::<Result<_, _>>()?;
     if data.is_empty() {
         Ok(None)
     } else {
         let count = data.len();
         let unique_numbers: Vec<_> = get_unique_float(data);
-
         match (unique_numbers.first(), unique_numbers.last()) {
-            (Some(first), Some(last)) => Ok(Some(ValueStats::F64 {
+            (Some(first), Some(last)) => Ok(Some(make_stats(
                 count,
-                min: *first,
-                max: *last,
-                unique_values: unique_numbers.into_iter().collect(),
-            })),
+                *first,
+                *last,
+                unique_numbers.into_iter().collect(),
+            ))),
             _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
         }
     }
