@@ -3,7 +3,7 @@ use std::error::Error;
 use std::hash::Hash;
 
 use npyz::Deserialize;
-use ordered_float::OrderedFloat;
+use ordered_float::{OrderedFloat, PrimitiveFloat};
 
 /// A struct to hold the results of the NPY file analysis.
 #[derive(Debug)]
@@ -154,52 +154,62 @@ fn value_stats_for_float16_type(
 fn value_stats_for_float32_type(
     npy: npyz::NpyFile<&[u8]>,
 ) -> Result<Option<ValueStats>, Box<dyn Error>> {
-    let data: Vec<_> = npy.data::<f32>()?.collect::<Result<_, _>>()?;
-    if data.is_empty() {
-        Ok(None)
-    } else {
-        let count = data.len();
-        let mut unique_numbers: Vec<_> =
-            HashSet::<OrderedFloat<f32>>::from_iter(data.into_iter().map(OrderedFloat))
-                .into_iter()
-                .collect();
-        unique_numbers.sort_unstable();
-
-        match (unique_numbers.first(), unique_numbers.last()) {
-            (Some(first), Some(last)) => Ok(Some(ValueStats::F32 {
-                count,
-                min: first.0,
-                max: last.0,
-                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
-            })),
-            _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
-        }
-    }
+    value_stats_for_float_type::<f32>(npy, |count, min, max, unique_values| ValueStats::F32 {
+        count,
+        min,
+        max,
+        unique_values,
+    })
 }
 
 /// Helper function to compute statistics for f64 type.
 fn value_stats_for_float64_type(
     npy: npyz::NpyFile<&[u8]>,
 ) -> Result<Option<ValueStats>, Box<dyn Error>> {
-    let data: Vec<_> = npy.data::<f64>()?.collect::<Result<_, _>>()?;
+    value_stats_for_float_type::<f64>(npy, |count, min, max, unique_values| ValueStats::F64 {
+        count,
+        min,
+        max,
+        unique_values,
+    })
+}
+
+/// Helper function to compute statistics for float types (f32, f64).
+fn value_stats_for_float_type<T>(
+    npy: npyz::NpyFile<&[u8]>,
+    make_stats: impl Fn(usize, T, T, Vec<T>) -> ValueStats,
+) -> Result<Option<ValueStats>, Box<dyn Error>>
+where
+    T: PartialOrd + Copy + 'static + PrimitiveFloat,
+    T: Deserialize,
+{
+    let data: Vec<_> = npy.data::<T>()?.collect::<Result<_, _>>()?;
     if data.is_empty() {
         Ok(None)
     } else {
         let count = data.len();
-        let mut unique_numbers: Vec<_> =
-            HashSet::<OrderedFloat<f64>>::from_iter(data.into_iter().map(OrderedFloat))
-                .into_iter()
-                .collect();
-        unique_numbers.sort_unstable();
-
+        let unique_numbers: Vec<_> = get_unique_float(data);
         match (unique_numbers.first(), unique_numbers.last()) {
-            (Some(first), Some(last)) => Ok(Some(ValueStats::F64 {
+            (Some(first), Some(last)) => Ok(Some(make_stats(
                 count,
-                min: first.0,
-                max: last.0,
-                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
-            })),
+                *first,
+                *last,
+                unique_numbers.into_iter().collect(),
+            ))),
             _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
         }
     }
+}
+
+/// Get unique values of a vec of numbers (int or float)
+pub fn get_unique_float<T>(input: Vec<T>) -> Vec<T>
+where
+    T: Copy,
+    OrderedFloat<T>: std::hash::Hash + Eq + Ord,
+{
+    let wrapped: Vec<OrderedFloat<T>> = input.iter().map(|&x| OrderedFloat(x)).collect();
+    let unique_set: HashSet<OrderedFloat<T>> = wrapped.into_iter().collect();
+    let mut unique_vec: Vec<OrderedFloat<T>> = unique_set.into_iter().collect();
+    unique_vec.sort();
+    unique_vec.into_iter().map(|ordered| ordered.0).collect()
 }
