@@ -52,6 +52,10 @@ pub enum ValueStats {
         min: f64,
         max: f64,
     },
+    String {
+        count: usize,
+        unique_values: Vec<String>,
+    },
 }
 
 /// Analyzes the NPY file and returns a struct with the results.
@@ -86,6 +90,8 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
                 (npyz::TypeChar::Float, 2) => value_stats_for_float16_type(npy)?,
                 (npyz::TypeChar::Float, 4) => value_stats_for_float32_type(npy)?,
                 (npyz::TypeChar::Float, 8) => value_stats_for_float64_type(npy)?,
+
+                (npyz::TypeChar::ByteStr, _size) => value_stats_for_string_type(npy)?,
 
                 _ => None, // Unsupported type for detailed stats
             };
@@ -285,4 +291,23 @@ where
     let mut unique_vec: Vec<OrderedFloat<T>> = unique_set.into_iter().collect();
     unique_vec.sort();
     unique_vec.into_iter().map(|ordered| ordered.0).collect()
+}
+
+/// Helper function to compute statistics for string type.
+fn value_stats_for_string_type(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>> {
+    let data: Vec<_> = npy.data::<String>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let mut unique_values: Vec<_> = HashSet::<String>::from_iter(data).into_iter().collect();
+        unique_values.sort();
+
+        Ok(Some(ValueStats::String {
+            count,
+            unique_values,
+        }))
+    }
 }

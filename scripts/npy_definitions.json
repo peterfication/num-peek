@@ -190,5 +190,21 @@
         12.6
       ]
     ]
+  },
+  {
+    "file_path": "assets/string.npy",
+    "dtype": "S",
+    "values": [
+      [
+        "cat",
+        "dog",
+        "cat"
+      ],
+      [
+        "mouse",
+        "mouse",
+        "horse"
+      ]
+    ]
   }
 ]
