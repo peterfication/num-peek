@@ -18,11 +18,21 @@ pub struct NpyAnalysis {
 /// An enum to hold statistics for different supported numeric types.
 #[derive(Debug)]
 pub enum ValueStats {
+    BOOL {
+        count: usize,
+        unique_values: Vec<bool>,
+    },
     I64 {
         count: usize,
         unique_values: Vec<i64>,
         min: i64,
         max: i64,
+    },
+    U64 {
+        count: usize,
+        unique_values: Vec<u64>,
+        min: u64,
+        max: u64,
     },
     F16 {
         count: usize,
@@ -41,6 +51,10 @@ pub enum ValueStats {
         unique_values: Vec<f64>,
         min: f64,
         max: f64,
+    },
+    String {
+        count: usize,
+        unique_values: Vec<String>,
     },
 }
 
@@ -61,14 +75,23 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
             let dtype_str = format!("{:?}{}", plain.type_char(), bits);
 
             let stats = match (plain.type_char(), plain.size_field()) {
+                (npyz::TypeChar::Bool, _size) => value_stats_for_bool_type(npy)?,
+
                 (npyz::TypeChar::Int, 1) => value_stats_for_int_type::<i8>(npy)?,
                 (npyz::TypeChar::Int, 2) => value_stats_for_int_type::<i16>(npy)?,
                 (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
                 (npyz::TypeChar::Int, 8) => value_stats_for_int_type::<i64>(npy)?,
 
+                (npyz::TypeChar::Uint, 1) => value_stats_for_uint_type::<u8>(npy)?,
+                (npyz::TypeChar::Uint, 2) => value_stats_for_uint_type::<u16>(npy)?,
+                (npyz::TypeChar::Uint, 4) => value_stats_for_uint_type::<u32>(npy)?,
+                (npyz::TypeChar::Uint, 8) => value_stats_for_uint_type::<u64>(npy)?,
+
                 (npyz::TypeChar::Float, 2) => value_stats_for_float16_type(npy)?,
                 (npyz::TypeChar::Float, 4) => value_stats_for_float32_type(npy)?,
                 (npyz::TypeChar::Float, 8) => value_stats_for_float64_type(npy)?,
+
+                (npyz::TypeChar::ByteStr, _size) => value_stats_for_string_type(npy)?,
 
                 _ => None, // Unsupported type for detailed stats
             };
@@ -84,6 +107,31 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
         stats,
         total_bytes,
     })
+}
+
+/// Helper function to compute statistics for bool type.
+fn value_stats_for_bool_type(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>> {
+    let data: Vec<_> = npy.data::<bool>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let has_true = data.iter().any(|&x| x);
+        let has_false = data.iter().any(|&x| !x);
+        let unique_values = match (has_true, has_false) {
+            (true, true) => vec![true, false],
+            (true, false) => vec![true],
+            (false, true) => vec![false],
+            (false, false) => vec![], // This case should not happen due to is_empty check
+        };
+
+        Ok(Some(ValueStats::BOOL {
+            count,
+            unique_values,
+        }))
+    }
 }
 
 /// Helper function to compute statistics for integer types.
@@ -103,6 +151,37 @@ where
         unique_numbers.sort_unstable();
 
         Ok(Some(ValueStats::I64 {
+            count,
+            min: (*unique_numbers
+                .first()
+                .expect("unique_numbers should not be empty after non-empty data"))
+            .into(),
+            max: (*unique_numbers
+                .last()
+                .expect("unique_numbers should not be empty after non-empty data"))
+            .into(),
+            unique_values: unique_numbers.iter().map(|&x| x.into()).collect(),
+        }))
+    }
+}
+
+/// Helper function to compute statistics for unsigned integer types.
+fn value_stats_for_uint_type<T>(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>>
+where
+    T: Eq + Hash + Ord + Copy + Into<u64>,
+    T: Deserialize,
+{
+    let data: Vec<T> = npy.data::<T>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let mut unique_numbers: Vec<_> = HashSet::<T>::from_iter(data).into_iter().collect();
+        unique_numbers.sort_unstable();
+
+        Ok(Some(ValueStats::U64 {
             count,
             min: (*unique_numbers
                 .first()
@@ -212,4 +291,23 @@ where
     let mut unique_vec: Vec<OrderedFloat<T>> = unique_set.into_iter().collect();
     unique_vec.sort();
     unique_vec.into_iter().map(|ordered| ordered.0).collect()
+}
+
+/// Helper function to compute statistics for string type.
+fn value_stats_for_string_type(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>> {
+    let data: Vec<_> = npy.data::<String>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let mut unique_values: Vec<_> = HashSet::<String>::from_iter(data).into_iter().collect();
+        unique_values.sort();
+
+        Ok(Some(ValueStats::String {
+            count,
+            unique_values,
+        }))
+    }
 }

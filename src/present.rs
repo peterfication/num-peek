@@ -19,13 +19,27 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
     println!("----------------------------------------");
 
     match &analysis.stats {
+        Some(ValueStats::BOOL {
+            count,
+            unique_values,
+        }) => {
+            print_stats(count, unique_values);
+        }
         Some(ValueStats::I64 {
             count,
             unique_values,
             min,
             max,
         }) => {
-            print_stats(count, unique_values, min, max);
+            print_stats_numeric(count, unique_values, min, max);
+        }
+        Some(ValueStats::U64 {
+            count,
+            unique_values,
+            min,
+            max,
+        }) => {
+            print_stats_numeric(count, unique_values, min, max);
         }
         Some(ValueStats::F16 {
             count,
@@ -33,7 +47,7 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
             min,
             max,
         }) => {
-            print_stats(count, unique_values, min, max);
+            print_stats_numeric(count, unique_values, min, max);
         }
         Some(ValueStats::F32 {
             count,
@@ -41,7 +55,7 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
             min,
             max,
         }) => {
-            print_stats(count, unique_values, min, max);
+            print_stats_numeric(count, unique_values, min, max);
         }
         Some(ValueStats::F64 {
             count,
@@ -49,7 +63,13 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
             min,
             max,
         }) => {
-            print_stats(count, unique_values, min, max);
+            print_stats_numeric(count, unique_values, min, max);
+        }
+        Some(ValueStats::String {
+            count,
+            unique_values,
+        }) => {
+            print_stats(count, unique_values);
         }
         None => {
             println!(
@@ -60,7 +80,17 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
     }
 }
 
-fn print_stats<T, U>(count: &usize, unique_values: &U, min: &T, max: &T)
+fn print_stats<T, U>(count: &usize, unique_values: &U)
+where
+    T: std::fmt::Debug + std::fmt::Display,
+    U: std::fmt::Debug + std::ops::Deref<Target = [T]>,
+{
+    println!("Number of values: {count}");
+    println!("Number of unique values: {}", unique_values.len());
+    println!("Unique values: {unique_values:?}");
+}
+
+fn print_stats_numeric<T, U>(count: &usize, unique_values: &U, min: &T, max: &T)
 where
     T: std::fmt::Debug + std::fmt::Display,
     U: std::fmt::Debug + std::ops::Deref<Target = [T]>,
