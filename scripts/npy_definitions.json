@@ -1,5 +1,21 @@
 [
   {
+    "file_path": "assets/bool.npy",
+    "dtype": "bool",
+    "values": [
+      [
+        true,
+        true,
+        false
+      ],
+      [
+        false,
+        true,
+        true
+      ]
+    ]
+  },
+  {
     "file_path": "assets/uint8.npy",
     "dtype": "uint8",
     "values": [

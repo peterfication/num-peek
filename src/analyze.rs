@@ -18,6 +18,10 @@ pub struct NpyAnalysis {
 /// An enum to hold statistics for different supported numeric types.
 #[derive(Debug)]
 pub enum ValueStats {
+    BOOL {
+        count: usize,
+        unique_values: Vec<bool>,
+    },
     I64 {
         count: usize,
         unique_values: Vec<i64>,
@@ -67,6 +71,8 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
             let dtype_str = format!("{:?}{}", plain.type_char(), bits);
 
             let stats = match (plain.type_char(), plain.size_field()) {
+                (npyz::TypeChar::Bool, _size) => value_stats_for_bool_type(npy)?,
+
                 (npyz::TypeChar::Int, 1) => value_stats_for_int_type::<i8>(npy)?,
                 (npyz::TypeChar::Int, 2) => value_stats_for_int_type::<i16>(npy)?,
                 (npyz::TypeChar::Int, 4) => value_stats_for_int_type::<i32>(npy)?,
@@ -95,6 +101,31 @@ pub fn analyze_npy(file_path: &str) -> Result<NpyAnalysis, Box<dyn std::error::E
         stats,
         total_bytes,
     })
+}
+
+/// Helper function to compute statistics for bool type.
+fn value_stats_for_bool_type(
+    npy: npyz::NpyFile<&[u8]>,
+) -> Result<Option<ValueStats>, Box<dyn Error>> {
+    let data: Vec<_> = npy.data::<bool>()?.collect::<Result<_, _>>()?;
+    if data.is_empty() {
+        Ok(None)
+    } else {
+        let count = data.len();
+        let has_true = data.iter().any(|&x| x);
+        let has_false = data.iter().any(|&x| !x);
+        let unique_values = match (has_true, has_false) {
+            (true, true) => vec![true, false],
+            (true, false) => vec![true],
+            (false, true) => vec![false],
+            (false, false) => vec![], // This case should not happen due to is_empty check
+        };
+
+        Ok(Some(ValueStats::BOOL {
+            count,
+            unique_values,
+        }))
+    }
 }
 
 /// Helper function to compute statistics for integer types.

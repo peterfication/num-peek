@@ -24,6 +24,7 @@ fn cli_run_with_file(file_path: &str, snapshot_name: &str) {
 #[test]
 fn cli_run_all_types() {
     let files = [
+        "assets/bool.npy",
         "assets/uint8.npy",
         "assets/uint16.npy",
         "assets/uint32.npy",

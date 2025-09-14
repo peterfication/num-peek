@@ -1,0 +1,14 @@
+---
+source: tests/cli.rs
+expression: output
+---
+Peek into assets/bool.npy
+----------------------------------------
+Dimensions: 2
+Shape: [2, 3]
+Type: Bool8
+Bytes: 134 B
+----------------------------------------
+Number of values: 6
+Number of unique values: 2
+Unique values: [true, false]

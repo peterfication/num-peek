@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Add support for bool
 - Add support for uint8, uint16, uint32 and uint64
 
 ## [0.1.3] - 2025-09-13

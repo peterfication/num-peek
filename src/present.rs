@@ -19,6 +19,12 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
     println!("----------------------------------------");
 
     match &analysis.stats {
+        Some(ValueStats::BOOL {
+            count,
+            unique_values,
+        }) => {
+            print_stats_bool(count, unique_values);
+        }
         Some(ValueStats::I64 {
             count,
             unique_values,
@@ -66,6 +72,12 @@ pub fn present_analysis(file_path: &str, analysis: &NpyAnalysis) {
             );
         }
     }
+}
+
+fn print_stats_bool(count: &usize, unique_values: &Vec<bool>) {
+    println!("Number of values: {count}");
+    println!("Number of unique values: {}", unique_values.len());
+    println!("Unique values: {unique_values:?}");
 }
 
 fn print_stats<T, U>(count: &usize, unique_values: &U, min: &T, max: &T)
