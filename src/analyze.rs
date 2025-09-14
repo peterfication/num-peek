@@ -159,18 +159,14 @@ fn value_stats_for_float32_type(
         Ok(None)
     } else {
         let count = data.len();
-        let mut unique_numbers: Vec<_> =
-            HashSet::<OrderedFloat<f32>>::from_iter(data.into_iter().map(OrderedFloat))
-                .into_iter()
-                .collect();
-        unique_numbers.sort_unstable();
+        let unique_numbers: Vec<_> = get_unique_float(data);
 
         match (unique_numbers.first(), unique_numbers.last()) {
             (Some(first), Some(last)) => Ok(Some(ValueStats::F32 {
                 count,
-                min: first.0,
-                max: last.0,
-                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
+                min: *first,
+                max: *last,
+                unique_values: unique_numbers.into_iter().collect(),
             })),
             _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
         }
@@ -186,20 +182,29 @@ fn value_stats_for_float64_type(
         Ok(None)
     } else {
         let count = data.len();
-        let mut unique_numbers: Vec<_> =
-            HashSet::<OrderedFloat<f64>>::from_iter(data.into_iter().map(OrderedFloat))
-                .into_iter()
-                .collect();
-        unique_numbers.sort_unstable();
+        let unique_numbers: Vec<_> = get_unique_float(data);
 
         match (unique_numbers.first(), unique_numbers.last()) {
             (Some(first), Some(last)) => Ok(Some(ValueStats::F64 {
                 count,
-                min: first.0,
-                max: last.0,
-                unique_values: unique_numbers.into_iter().map(|n| n.0).collect(),
+                min: *first,
+                max: *last,
+                unique_values: unique_numbers.into_iter().collect(),
             })),
             _ => unreachable!("unique_numbers should not be empty due to is_empty check"),
         }
     }
+}
+
+/// Get unique values of a vec of numbers (int or float)
+pub fn get_unique_float<T>(input: Vec<T>) -> Vec<T>
+where
+    T: Copy,
+    OrderedFloat<T>: std::hash::Hash + Eq + Ord,
+{
+    let wrapped: Vec<OrderedFloat<T>> = input.iter().map(|&x| OrderedFloat(x)).collect();
+    let unique_set: HashSet<OrderedFloat<T>> = wrapped.into_iter().collect();
+    let mut unique_vec: Vec<OrderedFloat<T>> = unique_set.into_iter().collect();
+    unique_vec.sort();
+    unique_vec.into_iter().map(|ordered| ordered.0).collect()
 }
