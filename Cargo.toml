@@ -12,7 +12,7 @@ description = "A CLI tool that can peek into `*.npy` files."
 [dependencies]
 byte-unit = "5.1.6"
 clap = { version = "4.5.47", features = ["derive"] }
-half = "2.6.0"
+half = "2.7.0"
 npyz = { version = "0.8.4", features = ["half"] }
 ordered-float = "5.0.0"
 
