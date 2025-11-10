@@ -17,5 +17,5 @@ npyz = { version = "0.8.4", features = ["half"] }
 ordered-float = "5.1.0"
 
 [dev-dependencies]
-assert_cmd = "2.0.17"
+assert_cmd = "2.1.1"
 insta = "1.43.2"
