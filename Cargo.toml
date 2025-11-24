@@ -10,7 +10,7 @@ repository = "https://github.com/peterfication/num-peek"
 description = "A CLI tool that can peek into `*.npy` files."
 
 [dependencies]
-byte-unit = "5.1.6"
+byte-unit = "5.2.0"
 clap = { version = "4.5.47", features = ["derive"] }
 half = "2.7.0"
 npyz = { version = "0.8.4", features = ["half"] }
